@@ -1,0 +1,41 @@
+﻿services:
+  traefik:
+    image: traefik:v3
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+  api:
+    build:
+      context: ../api
+    environment:
+      - PORT=3001
+    depends_on:
+      - db
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.api.rule=Host(`api.deeployable.localhost`)
+      - traefik.http.routers.api.entrypoints=web
+      - traefik.http.services.api.loadbalancer.server.port=3001
+  ui:
+    build:
+      context: ../ui
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.ui.rule=Host(`admin.deeployable.localhost`)
+      - traefik.http.routers.ui.entrypoints=web
+      - traefik.http.services.ui.loadbalancer.server.port=3000
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=deeployable
+    ports:
+      - "5432:5432"
+    volumes:
+      - deeployable_dbdata:/var/lib/postgresql/data
+
+volumes:
+  deeployable_dbdata:
