@@ -39,6 +39,15 @@ export class DomainsController {
     }
     return { ok, verifiedAt: ok ? new Date() : null };
   }
+
+  @Post(':id/mark-verified')
+  @Roles('root', 'admin')
+  async markVerified(@Param('id', ParseIntPipe) id: number) {
+    const domain = await this.prisma.domain.findUnique({ where: { id } });
+    if (!domain) throw new HttpException('Domain not found', HttpStatus.NOT_FOUND);
+    await this.prisma.domain.update({ where: { id }, data: { verifiedAt: new Date() as any } });
+    return { ok: true };
+  }
 }
 
 

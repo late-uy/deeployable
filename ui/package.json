@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "setup": "node -e \"require('fs').existsSync('.env')||require('fs').copyFileSync('.env.example','.env')\"",
     "dev": "next dev -p ${PORT:-8080}",
     "build": "next build",
     "start": "next start -p ${PORT:-8080}",

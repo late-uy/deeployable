@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateProjectDto, UpdateProjectDto } from './project.entity';
+import { CreateProjectDto, UpdateProjectDto } from './dto';
 
 @Injectable()
 export class ProjectsService {
@@ -17,7 +17,16 @@ export class ProjectsService {
   }
 
   async create(data: CreateProjectDto) {
-    return this.prisma.project.create({ data });
+    const createData = {
+      name: data.name,
+      provider: data.provider ?? 'generic',
+      repoUrl: data.repoUrl,
+      branch: data.branch,
+      buildCmd: data.buildCmd,
+      startCmd: data.startCmd,
+      runtimePort: data.runtimePort,
+    };
+    return this.prisma.project.create({ data: createData });
   }
 
   async update(id: number, data: UpdateProjectDto) {

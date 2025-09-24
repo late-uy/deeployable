@@ -7,11 +7,13 @@
     "ui"
   ],
   "scripts": {
+    "setup": "npm run setup -w api && npm run setup -w ui",
     "build": "npm run build -w api && npm run build -w ui",
     "start": "npm run start -w api & npm run start -w ui",
     "dev": "npm run dev -w api & npm run dev -w ui",
     "postinstall": "npm run generate -w api || true"
-  }
+  },
+  "_comment": "Cadena feliz: npm install && npm run setup && npm run start"
 }
 
 

@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class AuthService {
@@ -11,7 +11,7 @@ export class AuthService {
     if (await this.usersService.count() > 0) {
       throw new BadRequestException('Root already exists');
     }
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await argon2.hash(password);
     const user = await this.usersService.createUser(email, passwordHash, 'root');
     return { id: user.id, email: user.email, role: user.role };
   }
@@ -21,7 +21,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const ok = await bcrypt.compare(password, user.passwordHash);
+    const ok = await argon2.verify(user.passwordHash, password);
     if (!ok) {
       throw new UnauthorizedException('Invalid credentials');
     }

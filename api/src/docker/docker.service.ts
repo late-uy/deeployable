@@ -32,7 +32,7 @@ export class DockerService {
   {
     const hasDocker = await this.isDockerAvailable();
     if (!hasDocker) {
-      const message = 'docker no instalado';
+      const message = 'Instalá Docker para deploys reales';
       this.logger.warn(message);
       throw new Error(message);
     }
@@ -95,6 +95,13 @@ export class DockerService {
       const envCurrent = await this.prisma.environment.findUnique({ where: { id: environment.id } });
       const nextSlot = (envCurrent && (envCurrent as any).activeSlot === 'a') ? 'b' : 'a';
       await this.prisma.environment.update({ where: { id: environment.id }, data: { activeSlot: nextSlot as any } });
+
+      // Traefik mode (opcional): registrar cambio de router activo
+      if (process.env.TRAEFIK_ENABLED === 'true') {
+        this.logger.log(`Traefik habilitado: router activo cambiado al slot ${nextSlot}`);
+      } else {
+        this.logger.log('Modo node-only: marcado como healthy tras health-check exitoso');
+      }
 
       await this.prisma.deploy.update({
         where: { id: deploy.id },

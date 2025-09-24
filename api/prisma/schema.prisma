@@ -27,13 +27,13 @@ enum UserRole {
 model Project {
 	id           Int      @id @default(autoincrement())
 	name         String
-	provider     String?
+	provider     String
 	repoUrl      String
 	branch       String
 	buildCmd     String
 	startCmd     String
 	runtimePort  Int
-	createdById  Int?
+	webhookSecret String?
 
 	environments Environment[]
 	deploys      Deploy[]

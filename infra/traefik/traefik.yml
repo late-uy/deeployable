@@ -3,6 +3,9 @@
     address: ":80"
 
 providers:
+  file:
+    directory: "/etc/traefik/dynamic"
+    watch: true
   docker:
     exposedByDefault: false
 

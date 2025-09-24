@@ -8,15 +8,6 @@ export interface Project {
   runtimePort: number;
 }
 
-export interface CreateProjectDto {
-  name: string;
-  repoUrl: string;
-  branch: string;
-  buildCmd: string;
-  startCmd: string;
-  runtimePort: number;
-}
-
-export type UpdateProjectDto = Partial<CreateProjectDto>;
+// Legacy DTOs replaced by class-validator DTOs in dto.ts
 
 

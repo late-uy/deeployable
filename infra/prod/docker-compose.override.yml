@@ -1,0 +1,10 @@
+services:
+  traefik:
+    volumes:
+      - ./prod/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./dynamic:/etc/traefik/dynamic:rw
+      - letsencrypt:/letsencrypt
+
+volumes:
+  letsencrypt:
+

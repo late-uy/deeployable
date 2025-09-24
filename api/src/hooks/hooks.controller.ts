@@ -1,6 +1,7 @@
-import { Body, Controller, Headers, Post } from '@nestjs/common';
+import { Body, Controller, Headers, HttpException, HttpStatus, Post } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { JobsService } from '../jobs/jobs.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 interface GithubWebhookBody {
   repository?: { full_name?: string };
@@ -10,22 +11,29 @@ interface GithubWebhookBody {
 
 @Controller('hooks')
 export class HooksController {
-  constructor(private readonly jobs: JobsService) {}
+  constructor(private readonly jobs: JobsService, private readonly prisma: PrismaService) {}
 
   @Post('github')
-  github(
+  async github(
     @Body() body: GithubWebhookBody,
     @Headers('x-hub-signature-256') signature256: string | undefined,
+    @Headers('x-project-id') projectIdHeader: string | undefined,
+    @Headers('x-environment-id') envIdHeader: string | undefined,
   ) {
-    const secret = process.env.GITHUB_WEBHOOK_SECRET || '';
-    if (!this.verifySignature(secret, body, signature256)) {
-      return { ok: false };
+    const projectId = Number(projectIdHeader);
+    const environmentId = Number(envIdHeader);
+    if (!projectId || !environmentId) {
+      throw new HttpException('Missing x-project-id / x-environment-id', HttpStatus.BAD_REQUEST);
+    }
+    const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+    if (!project || !project.webhookSecret) {
+      throw new HttpException('Project or webhookSecret not found', HttpStatus.NOT_FOUND);
+    }
+    if (!this.verifySignature(project.webhookSecret, body, signature256)) {
+      throw new HttpException('Invalid signature', HttpStatus.FORBIDDEN);
     }
 
     const sha = body.after || '';
-    // Placeholder: resolver projectId/envId desde el repo o headers personalizados
-    const projectId = Number(process.env.DEFAULT_PROJECT_ID || 1);
-    const environmentId = Number(process.env.DEFAULT_ENVIRONMENT_ID || 1);
     this.jobs.enqueue({ projectId, environmentId, sha });
     return { ok: true };
   }

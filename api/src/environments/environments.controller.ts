@@ -5,6 +5,7 @@ import { JwtAuthGuard, RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('root', 'admin')
 @Controller('environments')
 export class EnvironmentsController {
   constructor(private readonly environmentsService: EnvironmentsService) {}
