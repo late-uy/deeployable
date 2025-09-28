@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ROOT
+  ADMIN
+  USER
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
+  project      Project?
+}
+
+model Project {
+  id         Int           @id @default(autoincrement())
+  name       String
+  repoUrl    String
+  createdAt  DateTime      @default(now())
+  userId     Int?
+  user       User?         @relation(fields: [userId], references: [id])
+  environments Environment[]
+  deploys      Deploy[]
+}
+
+model Environment {
+  id        Int        @id @default(autoincrement())
+  project   Project    @relation(fields: [projectId], references: [id])
+  projectId Int
+  name      String
+  branch    String
+  createdAt DateTime   @default(now())
+  variables Variable[]
+  domains   Domain[]
+  deploys   Deploy[]
+
+  @@unique([projectId, name])
+}
+
+model Variable {
+  id            Int          @id @default(autoincrement())
+  environment   Environment  @relation(fields: [environmentId], references: [id])
+  environmentId Int
+  key           String
+  value         String
+  isSecret      Boolean      @default(true)
+
+  @@unique([environmentId, key])
+}
+
+model Domain {
+  id             Int          @id @default(autoincrement())
+  environment    Environment  @relation(fields: [environmentId], references: [id])
+  environmentId  Int
+  hostname       String
+  verified       Boolean      @default(false)
+  verificationToken String
+
+  @@unique([environmentId, hostname])
+}
+
+model Deploy {
+  id             Int          @id @default(autoincrement())
+  project        Project      @relation(fields: [projectId], references: [id])
+  projectId      Int
+  environment    Environment  @relation(fields: [environmentId], references: [id])
+  environmentId  Int
+  sha            String?
+  status         String
+  startedAt      DateTime?    @default(now())
+  finishedAt     DateTime?
+}

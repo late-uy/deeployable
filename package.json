@@ -1,0 +1,17 @@
+{
+  "name": "deeployable",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "api",
+    "ui"
+  ],
+  "scripts": {
+    "setup": "npm run --workspace api setup && npm run --workspace ui setup",
+    "build": "npm run --workspace api build && npm run --workspace ui build",
+    "start": "concurrently \"npm run --workspace api start\" \"npm run --workspace ui start\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
